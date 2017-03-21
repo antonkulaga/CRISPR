@@ -1,15 +1,11 @@
-package crispr
+package comp.bio.aging.crispr.services
 
 import fr.hmil.roshttp.HttpRequest
 import fr.hmil.roshttp.body.URLEncodedBody
-import io.circe.Decoder.Result
-import monix.execution.Scheduler.Implicits.global
-import io.circe._
-import io.circe.generic.auto._
-import io.circe.parser._
-import io.circe.syntax._
 import io.circe._
 import io.circe.generic.semiauto._
+import io.circe.parser._
+import monix.execution.Scheduler.Implicits.global
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
@@ -30,7 +26,7 @@ case class CyndelData( value: Double, GCContent: String, FreeEnergy: Double, Sum
   */
 class Cyndel(val base: String = "http://big.hanyang.ac.kr", script: String ="/engine/cindel_text_fasta-3.0.php") {
 
-  protected implicit def tryToFuture[T](t:Try[T]):Future[T] = {
+  protected implicit def tryToFuture[T](t: Try[T]): Future[T] = {
     t match{
       case Success(s) => Future.successful(s)
       case Failure(ex) => Future.failed(ex)
@@ -56,8 +52,7 @@ class Cyndel(val base: String = "http://big.hanyang.ac.kr", script: String ="/en
     sendFasta(name, guide)
       .flatMap(res=>HttpRequest(base+res)
         .send()
-        .map{ b=> parse(b.body)
-        })
+        .map(b=> parse(b.body)) )
   }
 
   def getScore(name: String, guide: String): Future[CyndelData] = {

@@ -1,12 +1,12 @@
 package comp.bio.aging.crispr
 
-import crispr.Cyndel
+import comp.bio.aging.crispr.services.Cyndel
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 
 
-object Main extends App{
+object CyndelTester extends App{
 
   val c = new Cyndel()
   val result= c.getScore("hello", "TTTACAGTGACGTCGGTTAGGACACTG")

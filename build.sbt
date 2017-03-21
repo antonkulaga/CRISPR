@@ -23,8 +23,6 @@ lazy val commonSettings = Seq(
 
 	resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"),
 
-	resolvers += sbt.Resolver.bintrayRepo("shadaj", "denigma-releases"), // for scalapy
-
 	maintainer := "Anton Kulaga <antonkulaga@gmail.com>",
 
 	packageDescription := """crispr-server""",
@@ -41,12 +39,12 @@ lazy val commonSettings = Seq(
 
 	scalacOptions ++= Seq( "-target:jvm-1.8", "-feature", "-language:_" ),
 
-	javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M", "-encoding", "UTF-8")
+	javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M", "-encoding", "UTF-8"),
+
+	initialCommands in (Test, console) := """ammonite.Main().run()"""
 )
 
 commonSettings
-
-mainClass in Compile := Some("comp.bio.aging.crispr.server.WebSebrver")
 
 resourceDirectory in Test := baseDirectory { _ / "files" }.value
 
@@ -60,18 +58,16 @@ libraryDependencies ++= Seq(
 
 	"org.denigma" %% "akka-http-extensions" % "0.0.15",
 
-	"com.typesafe.akka" %% "akka-stream" % "2.4.16",
+	"com.typesafe.akka" %% "akka-stream" % "2.4.17",
 
 	"net.sf.py4j" % "py4j" % "0.10.4",
 
 	"com.lihaoyi" % "ammonite" % "0.8.2" % Test cross CrossVersion.full,
 
-	"com.typesafe.akka" %% "akka-http-testkit" % "10.0.1" % Test,
+	"com.typesafe.akka" %% "akka-http-testkit" % "10.0.5" % Test,
 
   "org.scalatest" %% "scalatest" % "3.0.1" % Test
 )
-
-initialCommands in (Test, console) := """ammonite.Main().run()"""
 
 enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
 
@@ -102,23 +98,22 @@ lazy val crispr = crossProject
   .settings(
     name := "crispr",
 		libraryDependencies ++= Seq(
-			"fr.hmil" %%% "roshttp" % "2.0.1"
+			"fr.hmil" %%% "roshttp" % "2.0.1",
+			"org.scalatest" %%% "scalatest" % "3.0.1" % Test
 		),
 		libraryDependencies ++= Seq(
 			"io.circe" %%% "circe-core",
 			"io.circe" %%% "circe-generic",
-			"io.circe" %%% "circe-parser",
-			"io.circe" %%% "circe-jawn"
+			"io.circe" %%% "circe-parser"
 		).map(_ % circeVersion)
 	)
   .disablePlugins(RevolverPlugin)
   .jvmSettings(
-		/*
     libraryDependencies ++= Seq(
-     "org.apache.spark" %% "spark-core" % "2.0.2",
-     "org.bdgenomics.adam" %% "adam-core-spark2" % "0.21.0"
+		  "comp.bio.aging" %% "adam-playground" % "0.0.2",
+			"com.lihaoyi" % "ammonite" % "0.8.2" % Test cross CrossVersion.full,
+			"com.github.pathikrit" %% "better-files" % "2.17.1"
 		)
-		*/
   )
   .jsSettings(
     jsDependencies += RuntimeDOM % Test

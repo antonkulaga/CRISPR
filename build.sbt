@@ -4,8 +4,6 @@ import sbt.Keys.{javaOptions, javacOptions, scalacOptions}
 import sbtdocker._
 import sbt._
 
-name := "crispr-server"
-
 //settings for all the projects
 lazy val commonSettings = Seq(
 
@@ -13,7 +11,7 @@ lazy val commonSettings = Seq(
 
 	scalaVersion :=  "2.11.8",
 
-	version := "0.0.1",
+	version := "0.0.2",
 
 	unmanagedClasspath in Compile ++= (unmanagedResources in Compile).value,
 
@@ -39,12 +37,16 @@ lazy val commonSettings = Seq(
 
 	scalacOptions ++= Seq( "-target:jvm-1.8", "-feature", "-language:_" ),
 
+	parallelExecution in Test := false,
+
 	javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M", "-encoding", "UTF-8"),
 
 	initialCommands in (Test, console) := """ammonite.Main().run()"""
 )
 
 commonSettings
+
+javaOptions ++= Seq("-Xms512M", "-Xmx3072M", "-XX:MaxPermSize=3072M", "-XX:+CMSClassUnloadingEnabled")
 
 resourceDirectory in Test := baseDirectory { _ / "files" }.value
 
@@ -93,7 +95,7 @@ lazy val circeVersion = "0.7.0"
 
 lazy val crispr = crossProject
   .crossType(CrossType.Full)
-  .in(file("client"))
+  .in(file("crispr"))
   .settings(commonSettings: _*)
   .settings(
     name := "crispr",
@@ -110,9 +112,10 @@ lazy val crispr = crossProject
   .disablePlugins(RevolverPlugin)
   .jvmSettings(
     libraryDependencies ++= Seq(
-		  "comp.bio.aging" %% "adam-playground" % "0.0.2",
+		  "comp.bio.aging" %% "adam-playground" % "0.0.3",
+			"com.github.pathikrit" %% "better-files" % "2.17.1",
 			"com.lihaoyi" % "ammonite" % "0.8.2" % Test cross CrossVersion.full,
-			"com.github.pathikrit" %% "better-files" % "2.17.1"
+			"com.holdenkarau" %% "spark-testing-base" % "2.1.0_0.6.0" % Test
 		)
   )
   .jsSettings(

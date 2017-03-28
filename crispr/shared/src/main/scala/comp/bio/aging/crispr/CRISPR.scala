@@ -13,6 +13,14 @@ trait CRISPR
 
   def reverseCut: Int
 
+  /**
+    * Searchs for the guides to match
+    * @param where
+    * @param includePam
+    * @param addBefore
+    * @param addAfter
+    * @return
+    */
   def guideSearch(where: String, includePam: Boolean = false, addBefore: Int = 0, addAfter: Int = 0): List[(Long, String)] = {
     val (before, after) = if(guideEnd < 0)
         (addBefore - guideEnd, addAfter)
@@ -26,9 +34,11 @@ trait CRISPR
         val start = i - before + pamStartAdd
         val end = i + after + pamEndAdd
         (start: Long , where.substring(start, end) )
-  }
+    }
 
   }
+
+  def pamSearch(where: String) = if(guideEnd < 0) searchesOf(where, pam, 0, guideEnd, 0) else searchesOf(where, pam, 0, 0, Math.abs(guideEnd))
 
   def compare(what: String, where: String, start: Int) = what.indices
     .forall{ i=> basesEqual(what(i).toUpper, where(start + i).toUpper) }
@@ -62,6 +72,27 @@ trait CRISPR
     )
   }
 
+  def cutsGuided(guided: Seq[(Long, String)]): Seq[(String, (Long, Long))] = guided.map{ case (index, guide) =>
+    val p = index - guideEnd
+    guide -> (
+      p + (if (forwardCut < 0) forwardCut else forwardCut + pam.length) ,
+      p + (if (reverseCut < 0) reverseCut else reverseCut + pam.length)
+    )
+  }
+
+
+
+  def cutsGuided(pams: List[Int], where: String): List[(String, (Long, Long))] = pams.map{p=>
+    if(guideEnd <0 && p + guideEnd < 0) println(s"MENSHE NULYA, $where and pam $p and g $guideEnd")
+    //if(guideEnd >0 && p + guideEnd < 0) println(s"MENSHE NULYA, $where and pam $p and g $guideEnd")
+    val guide = if(guideEnd < 0) where.substring(p + guideEnd, p) else where.substring(p + pam.length, p + pam.length + guideEnd)
+      guide -> (
+        p + (if (forwardCut < 0) forwardCut else forwardCut + pam.length): Long ,
+        p + (if (reverseCut < 0) reverseCut else reverseCut + pam.length): Long
+      )
+  }
+
+
   @tailrec final def searchesOf(where: String, what: String, start: Int = 0,
                                 before: Int = 0,
                                 after: Int = 0, acc: List[Int] = Nil): List[Int] = {
@@ -76,13 +107,4 @@ trait CRISPR
             searchesOf(where, what, index + 1, before, after, index :: acc)
         }
   }
-
-  /*
-  @tailrec final def matchesOf(where: String, start: Int = 0, acc: List[Int] = Nil): List[Int] = matchSeq(pam)(where, start) match {
-    case -1 => acc.reverse
-    case index => matchesOf(where, start + pam.length, index :: acc)
-  }
-  */
-
-    //def pams(where: String): List[Int] = matchesOf(where)
 }

@@ -10,5 +10,5 @@ class Cas9 extends CRISPR {
   lazy val reverseCut: Int = -3
   lazy val guideEnd: Int = -20 //is left from PAM
 
-
+  def crRNA: String = ??? //TODO: put ~100-nt CRISPR RNA
 }

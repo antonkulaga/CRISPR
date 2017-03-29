@@ -13,6 +13,8 @@ trait CRISPR
 
   def reverseCut: Int
 
+  def crRNA: String
+
   /**
     * Searchs for the guides to match
     * @param where

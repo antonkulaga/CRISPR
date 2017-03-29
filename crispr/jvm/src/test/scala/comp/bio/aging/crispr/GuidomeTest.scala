@@ -19,7 +19,7 @@ class GuidomeTest extends SparkTestBase{
   val merged = dnas.reduce(_ + _)
 
 
-  "CAS9" should {
+  "CAS9ADAM" should {
 
     val rightResults: Set[(Long, String)] = Set(
       (4L, "CTGATCTCCAGATATGACCATGG"),
@@ -34,7 +34,6 @@ class GuidomeTest extends SparkTestBase{
       cas9.guideSearch(merged, true).toSet shouldEqual rightResults
       cas9.guideSearch(merged, false).toSet should not be rightResults
     }
-
 
 
     "get right guidome" in {
@@ -61,9 +60,13 @@ class GuidomeTest extends SparkTestBase{
       val fragments = new NucleotideContigFragmentRDD(rdd, dic)
       val guides: NucleotideContigFragmentRDD = cas9.guidome(fragments, includePam = true)
       val rightCuts = Set(21L, 22L, 50L, 51L, 81L)
-      val cuts: Set[Long] = cas9.cutome(guides).map{ case (_, (cut, _)) => cut.start}.collect().toSet
+      val cuts: Set[Long] = cas9.cutome(guides).map{ cut =>
+        cut.top.start }.collect().toSet
       cuts shouldEqual rightCuts
     }
+  }
 
+  "Cpf1ADAM" should {
+    
   }
 }

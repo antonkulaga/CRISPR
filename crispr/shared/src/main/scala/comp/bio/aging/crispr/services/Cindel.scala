@@ -11,20 +11,20 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 
-object CyndelData {
-  implicit val decoder: Decoder[CyndelData] = deriveDecoder[CyndelData]
-  implicit val encoder: Encoder[CyndelData] = deriveEncoder[CyndelData]
+object CindelData {
+  implicit val decoder: Decoder[CindelData] = deriveDecoder[CindelData]
+  implicit val encoder: Encoder[CindelData] = deriveEncoder[CindelData]
 }
 
 
-case class CyndelData( value: Double, GCContent: String, FreeEnergy: Double, SumOfWeights: Double, Intercept: Double)
+case class CindelData(value: Double, GCContent: String, FreeEnergy: Double, SumOfWeights: Double, Intercept: Double)
 
 /**
   * Cpf1 indel evaluation
   * @param base
   * @param script
   */
-class Cyndel(val base: String = "http://big.hanyang.ac.kr", script: String ="/engine/cindel_text_fasta-3.0.php") {
+class Cindel(val base: String = "http://big.hanyang.ac.kr", script: String ="/engine/cindel_text_fasta-3.0.php") {
 
   protected implicit def tryToFuture[T](t: Try[T]): Future[T] = {
     t match{
@@ -55,12 +55,12 @@ class Cyndel(val base: String = "http://big.hanyang.ac.kr", script: String ="/en
         .map(b=> parse(b.body)) )
   }
 
-  def getScore(name: String, guide: String): Future[CyndelData] = {
+  def getScore(name: String, guide: String): Future[CindelData] = {
     getScoreJson(name, guide)
       .flatMap{j =>
-        val score: Try[CyndelData] = j.right.map(
+        val score: Try[CindelData] = j.right.map(
           data=>
-            data.hcursor.downField("data").downArray.first.as[CyndelData](CyndelData.decoder)
+            data.hcursor.downField("data").downArray.first.as[CindelData](CindelData.decoder)
         ) match {
           case Left(failure) => Failure(new Exception(failure.message))
           case Right(Left(failure)) => Failure(new Exception(failure.message))

@@ -47,7 +47,7 @@ class HomologyArmsTest extends SparkTestBase {
   "make right homology arms for all cuts" in {
     val fragments = prepareFragments()
     val guides = cas9.guidome(fragments, includePam = true)
-    val forwardCuts: Set[Long] = cas9.cutome(guides).map(_._2._1.start).collect().toSet
+    val forwardCuts: Set[Long] = cas9.cutome(guides).map(_.top.start).collect().toSet
     forwardCuts shouldEqual rightCuts
   }
 
@@ -55,9 +55,13 @@ class HomologyArmsTest extends SparkTestBase {
   "compute homology arms for cas9" in {
     val fragments = prepareFragments()
     val guides = cas9.guidome(fragments, includePam = true)
-    val cuts: RDD[(String, (ReferencePosition, ReferencePosition))] = cas9.cutome(guides)
-    val arms: collection.Map[String, KnockIn] = cas9.arms(fragments, cuts, 1500L, 1500L).collectAsMap()
+    val cuts = cas9.cutome(guides)
+    val arms = cas9.arms(fragments, cuts, 1500L, 1500L).collect()
     arms.size shouldEqual 5
+    arms.forall{case KnockIn(_,leftSeq, leftRegion, rightSeq, rightRegion)=>
+      leftSeq.length == 1500 && rightSeq.length == 1500 &&
+      leftRegion.length == 1500L && rightRegion.length == 1500L
+    }
   }
 
 }

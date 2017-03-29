@@ -22,15 +22,16 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
     contigFragmentRDD.flankAdjacentFragments(Math.abs(this.guideEnd + (if(includePam) pam.length else 0) -1) + additional)
   }
 
-  def cutome(contigFragmentRDD: NucleotideContigFragmentRDD): RDD[(String, (ReferencePosition, ReferencePosition))] = {
+  def cutome(contigFragmentRDD: NucleotideContigFragmentRDD): RDD[CutDS] = {
     contigFragmentRDD.rdd.flatMap{ fragment=>
       val start = fragment.getFragmentStartPosition
       val sequence = fragment.getFragmentSequence
       val pams: Seq[(Long, String)] = guideSearch(sequence, false)
       cutsGuided(pams).map{case (guide, (f, b)) =>
-       guide ->
-         ( ReferencePosition(fragment.getContig.getContigName, start + f) ,
-          ReferencePosition(fragment.getContig.getContigName, start + b))
+        CutDS( guide,
+          ReferencePosition(fragment.getContig.getContigName, start + f) ,
+          ReferencePosition(fragment.getContig.getContigName, start + b)
+        )
       }
     }
   }

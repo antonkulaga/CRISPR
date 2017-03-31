@@ -19,8 +19,10 @@ trait HomologyArms {
       case (cut) => cut.armsRegion(left, right) -> cut
     }.persist(StorageLevels.MEMORY_AND_DISK)
 
-    val extracted = fragmentRDD.extractRegions(positiveCuts.keys.collect().toList)
-
+    val extracted: RDD[(ReferenceRegion, String)] = fragmentRDD.extractRegions(positiveCuts.keys.collect().toList)
+      .filter{
+        case (_, str) => !avoidSites.exists( s=> str.contains(s))
+      }
     val joined: RDD[(ReferenceRegion, (CutDS, String))] = positiveCuts.join(extracted) //region,guide, value
     joined.map{
       case (region, (cut, regionSeq)) => cut.knockin(regionSeq, region, left, right, allowOverlap)

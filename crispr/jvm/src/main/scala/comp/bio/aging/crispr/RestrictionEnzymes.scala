@@ -4,7 +4,7 @@ import java.io.File
 
 import scala.collection.immutable
 import scala.io.Source
-
+import comp.bio.aging.playground.extensions.stringSeqExtensions._
 object RestrictionEnzymes {
 
   lazy val enzymes2seq: Set[(String, String)] = Source
@@ -21,9 +21,14 @@ object RestrictionEnzymes {
     case (str, enzymes)=> if(where.contains(str)) enzymes else Set.empty[String]
   }.toSet
 
-  def notIncludesEnzymes(where: String, what: Set[String]): Boolean = {
-    val values = enzymes2seqMap.filterKeys(what.contains).values.toSet
-    notIncludesSites(where, values)
+  def enzymesSites(enzymes: Set[String], reverseComplement: Boolean = true): Set[String] = {
+    val sites = enzymes2seqMap.filterKeys(enzymes.contains).values.toSet
+    if(reverseComplement) sites ++ sites.map(s=>s.complement.reverse) else sites
+  }
+
+  def notIncludesEnzymes(where: String, enzymes: Set[String], reverseComplement: Boolean = true): Boolean = {
+    val sites = enzymesSites(enzymes, reverseComplement)
+    notIncludesSites(where, sites)
   }
 
   def notIncludesSites(where: String, what: Set[String]): Boolean = {

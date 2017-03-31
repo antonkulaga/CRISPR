@@ -17,7 +17,7 @@ trait CRISPR
 
   /**
     * Searchs for the guides to match
-    * @param where
+    * @param where string in which we search for guides
     * @param includePam
     * @param addBefore
     * @param addAfter
@@ -40,31 +40,12 @@ trait CRISPR
 
   }
 
-  def pamSearch(where: String) = if(guideEnd < 0) searchesOf(where, pam, 0, guideEnd, 0) else searchesOf(where, pam, 0, 0, Math.abs(guideEnd))
-
-  def compare(what: String, where: String, start: Int) = what.indices
-    .forall{ i=> basesEqual(what(i).toUpper, where(start + i).toUpper) }
-
-  def basesEqual(base1: Char, base2: Char): Boolean = (base1, base2) match {
-    case (a, b) if a == b => true
-    case ('N', _) => true
-    case ('V', b) => b != 'T'
-    //case ('H', b) => b != 'G'
-    //case ('D', b) => b != 'C'
-    //case ('B', b) => b != 'A'
-    case ('W', b) => b == 'A' || b == 'T' //weak bonds
-    case ('S', b) => b == 'G' || b == 'C' //strong bonds
-    //case ('M', b) => b == 'A' || b == 'C' //amino
-    //case ('K', b) => b == 'G' || b == 'T' //keto
-    case ('Y', b) => b == 'T' || b == 'C' //pyrimidine
-    case ('R', b) => b == 'G' || b == 'A' //purine
-    case _ => false
-  }
-
-  @tailrec final def matchSeq(what: String)(where: String, start: Int, after: Int): Int =
-    if(start + what.length + after > where.length) -1
-    else
-      if(compare(what, where, start)) start else matchSeq(what)(where, start + 1, after)
+  /**
+    * Here we search for pam sequences
+    * @param where
+    * @return
+    */
+  def pamSearch(where: String): List[Int] = if(guideEnd < 0) searchesOf(where, pam, 0, guideEnd, 0) else searchesOf(where, pam, 0, 0, Math.abs(guideEnd))
 
 
   def cuts(pams: List[Int]): List[(Int, Int)] = pams.map{p=>
@@ -94,6 +75,30 @@ trait CRISPR
       )
   }
 
+  def compare(what: String, where: String, start: Int): Boolean = what.indices
+    .forall{ i=> basesEqual(what(i).toUpper, where(start + i).toUpper) }
+
+  def basesEqual(base1: Char, base2: Char): Boolean = (base1, base2) match {
+    case (a, b) if a == b => true
+    case ('N', _) => true
+    case ('V', b) => b != 'T'
+    //case ('H', b) => b != 'G'
+    //case ('D', b) => b != 'C'
+    //case ('B', b) => b != 'A'
+    case ('W', b) => b == 'A' || b == 'T' //weak bonds
+    case ('S', b) => b == 'G' || b == 'C' //strong bonds
+    //case ('M', b) => b == 'A' || b == 'C' //amino
+    //case ('K', b) => b == 'G' || b == 'T' //keto
+    case ('Y', b) => b == 'T' || b == 'C' //pyrimidine
+    case ('R', b) => b == 'G' || b == 'A' //purine
+    case _ => false
+  }
+
+  @tailrec final def matchSeq(what: String)(where: String, start: Int, after: Int): Int =
+    if(start + what.length + after > where.length) -1
+    else
+    if(compare(what, where, start)) start else matchSeq(what)(where, start + 1, after)
+
 
   @tailrec final def searchesOf(where: String, what: String, start: Int = 0,
                                 before: Int = 0,
@@ -109,4 +114,5 @@ trait CRISPR
             searchesOf(where, what, index + 1, before, after, index :: acc)
         }
   }
+
 }

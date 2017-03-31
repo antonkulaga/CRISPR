@@ -11,7 +11,7 @@ lazy val commonSettings = Seq(
 
 	scalaVersion :=  "2.11.8",
 
-	version := "0.0.4",
+	version := "0.0.6-M2",
 
 	unmanagedClasspath in Compile ++= (unmanagedResources in Compile).value,
 
@@ -113,8 +113,8 @@ lazy val crispr = crossProject
   .disablePlugins(RevolverPlugin)
   .jvmSettings(
     libraryDependencies ++= Seq(
-			"org.apache.spark" %% "spark-sql" % "2.0.2",
-		  "comp.bio.aging" %% "adam-playground" % "0.0.4",
+			"org.apache.spark" %% "spark-sql" % "2.1.0",
+		  "comp.bio.aging" %% "adam-playground" % "0.0.6-M1",
 			"com.github.pathikrit" %% "better-files" % "2.17.1",
 			"com.lihaoyi" % "ammonite" % "0.8.2" % Test cross CrossVersion.full,
 			"com.holdenkarau" %% "spark-testing-base" % "2.1.0_0.6.0" % Test

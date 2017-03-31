@@ -22,6 +22,26 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
     contigFragmentRDD.flankAdjacentFragments(Math.abs(this.guideEnd + (if(includePam) pam.length else 0) -1) + additional)
   }
 
+  def cutome(contigFragmentRDD: NucleotideContigFragmentRDD, guideList: List[String]): RDD[CutDS] = {
+    val guides = guideList.flatten
+    val regions: RDD[(String, ReferenceRegion)] = contigFragmentRDD.findRegions(guideList).flatMapValues(v=>v)
+    regions.flatMap{ case (sequence, region) =>
+      val start = region.start
+      val pams: Seq[(Long, String)] = guideSearch(sequence, false)
+      cutsGuided(pams).map{case (guide, (f, b)) =>
+        CutDS( guide,
+          ReferencePosition(region.referenceName, start + f) ,
+          ReferencePosition(region.referenceName, start + b)
+        )
+      }
+    }
+  }
+
+  /**
+    * All possible cuts inside (note: by now only forward strand is used)
+    * @param contigFragmentRDD
+    * @return
+    */
   def cutome(contigFragmentRDD: NucleotideContigFragmentRDD): RDD[CutDS] = {
     contigFragmentRDD.rdd.flatMap{ fragment=>
       val start = fragment.getFragmentStartPosition
@@ -37,38 +57,14 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
   }
 
 
-  /**
-    * WARNING: not tested yet!
-    * @param fragment
-    * @param addBefore
-    * @param addAfter
-    * @return
-    */
-  protected def extractReverseGuideFragments(fragment: NucleotideContigFragment,
-                                      includePam: Boolean,
-                                      addBefore: Int = 0,
-                                      addAfter: Int = 0): List[NucleotideContigFragment] = {
-    val sequence = fragment.getFragmentSequence.complement.reverse
-    guideSearch(sequence, includePam, addBefore, addAfter).map{
-      case (index, seq)=>
-        NucleotideContigFragment
-          .newBuilder(fragment)
-          .setFragmentStartPosition(fragment.getFragmentEndPosition - index)
-          .setFragmentEndPosition(fragment.getFragmentEndPosition - (index + seq.length))
-          .setFragmentNumber(null)
-          .setFragmentSequence(seq)
-          .setFragmentLength(seq.length: Long)
-          .build()
-    }
-  }
-
 
   /**
     * Warning: works with the forward strand only right now
+    * All possible guides for the contigFragment
     * @param contigFragmentRDD genome fragments
-    * @param addBefore
+    * @param addBefore if we want to get some elements before the start of the guide/pam
     * @param addAfter
-    * @param flankAdjacent
+    * @param flankAdjacent if we want to flank adjucent fragments (for guides that are inbetween fragments)
     * @return
     */
   def guidome(contigFragmentRDD: NucleotideContigFragmentRDD,

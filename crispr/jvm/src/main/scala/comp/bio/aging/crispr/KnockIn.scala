@@ -20,8 +20,8 @@ object CutDS{
   */
 case class CutDS(guide: String, top: ReferencePosition, bottom: ReferencePosition)
 {
-  lazy val leftishCut =  if(top.pos <= bottom.pos) top else bottom
-  lazy val rightishCut = if(top.pos >= bottom.pos) top else bottom
+  lazy val leftishCut: ReferencePosition =  if(top.pos <= bottom.pos) top else bottom
+  lazy val rightishCut: ReferencePosition = if(top.pos >= bottom.pos) top else bottom
 
   def leftArm(length: Long, canOverlap: Boolean = true): ReferenceRegion = {
     ReferenceRegion(leftishCut.referenceName,

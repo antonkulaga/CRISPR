@@ -7,13 +7,13 @@ import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import fr.hmil.roshttp.body.Implicits._
 import fr.hmil.roshttp.body.JSONBody._
 import fr.hmil.roshttp.HttpRequest
-import fr.hmil.roshttp.body.URLEncodedBody
+import fr.hmil.roshttp.body.{JSONBody, MultiPartBody, URLEncodedBody}
 import fr.hmil.roshttp.response.SimpleHttpResponse
 import io.circe.generic.semiauto._
 import io.circe.parser._
 import monix.execution.Scheduler.Implicits.global
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 

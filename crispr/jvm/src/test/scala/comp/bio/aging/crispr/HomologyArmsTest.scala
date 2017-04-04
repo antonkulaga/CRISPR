@@ -111,14 +111,7 @@ class HomologyArmsTest extends SparkTestBase {
       leftSeq.length == 1500 && rightSeq.length == 1500 &&
         leftRegion.length == 1500L && rightRegion.length == 1500L
     }
-/*
-    val armsNotINru = cas9.arms(fragments2, cuts2, 1500L, 1500L, RestrictionEnzymes.enzymesSites(Set("NruI"), true)).collect()
-    armsNotINru.size shouldEqual 1
-    armsNotINru.forall{case KnockIn(_,leftSeq, leftRegion, rightSeq, rightRegion)=>
-      leftSeq.length == 1500 && rightSeq.length == 1500 &&
-        leftRegion.length == 1500L && rightRegion.length == 1500L
-    }
-  */
+    //TODO: more tests on restricton-digestion
   }
 
 

@@ -26,12 +26,6 @@ case class CindelData(value: Double, GCContent: String, FreeEnergy: Double, SumO
   */
 class Cindel(val base: String = "http://big.hanyang.ac.kr", script: String ="/engine/cindel_text_fasta-3.0.php") {
 
-  protected implicit def tryToFuture[T](t: Try[T]): Future[T] = {
-    t match{
-      case Success(s) => Future.successful(s)
-      case Failure(ex) => Future.failed(ex)
-    }
-  }
 
   lazy val post: String = base + script
 

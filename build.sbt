@@ -11,7 +11,7 @@ lazy val commonSettings = Seq(
 
 	scalaVersion :=  "2.11.8",
 
-	version := "0.0.6-M2",
+	version := "0.0.6-M4",
 
 	unmanagedClasspath in Compile ++= (unmanagedResources in Compile).value,
 
@@ -68,7 +68,7 @@ libraryDependencies ++= Seq(
 
 	"com.typesafe.akka" %% "akka-http-testkit" % "10.0.5" % Test,
 
-  "org.scalatest" %% "scalatest" % "3.0.1" % Test
+  	"org.scalatest" %% "scalatest" % "3.0.1" % Test
 )
 
 enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
@@ -114,7 +114,8 @@ lazy val crispr = crossProject
   .jvmSettings(
     libraryDependencies ++= Seq(
 			"org.apache.spark" %% "spark-sql" % "2.1.0",
-		  "comp.bio.aging" %% "adam-playground" % "0.0.6-M1",
+	        "comp.bio.aging" %% "adam-playground" % "0.0.6",
+			"org.scalaj" %% "scalaj-http" % "2.3.0",
 			"com.github.pathikrit" %% "better-files" % "2.17.1",
 			"com.lihaoyi" % "ammonite" % "0.8.2" % Test cross CrossVersion.full,
 			"com.holdenkarau" %% "spark-testing-base" % "2.1.0_0.6.0" % Test

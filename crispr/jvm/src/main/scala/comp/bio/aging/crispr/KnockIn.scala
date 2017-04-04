@@ -41,14 +41,14 @@ case class CutDS(guide: String, top: ReferencePosition, bottom: ReferencePositio
 
   def arms(leftLength: Long, rightLength: Long) = List(leftArm(leftLength), rightArm(rightLength))
 
-  def armsRegion(leftLength: Long, rightLength: Long) = {
+  def armsRegion(leftLength: Long, rightLength: Long): ReferenceRegion = {
     ReferenceRegion(top.referenceName,
       leftishCut.pos - leftLength,
       rightishCut.pos + rightLength,
       strand = top.strand)
   }
 
-  def knockin(regionSeq: String, region: ReferenceRegion, leftLength: Long, rightLength: Long, overlap: Boolean) = {
+  def knockin(regionSeq: String, region: ReferenceRegion, leftLength: Long, rightLength: Long, overlap: Boolean): KnockIn = {
     val left = leftArm(leftLength, overlap)
     val right = rightArm(rightLength, overlap)
     val leftSeq = regionSeq.take(left.length().toInt)

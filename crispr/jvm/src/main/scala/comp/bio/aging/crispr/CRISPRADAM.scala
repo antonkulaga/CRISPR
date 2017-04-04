@@ -56,7 +56,17 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
     }
   }
 
+  def filterByGC(contigFragmentRDD:NucleotideContigFragmentRDD, minPercent: Int = 20, maxPercent: Int = 80): NucleotideContigFragmentRDD = {
+    contigFragmentRDD.transform{
+      rdd=> rdd.filter{
+        frag =>
+          val seq = frag.getFragmentSequence.toUpperCase
+          val percent = seq.count{ case 'G' | 'C' => true} * 100 / seq.length
+          minPercent < percent && percent < maxPercent
+      }
+    }
 
+  }
 
   /**
     * Warning: works with the forward strand only right now

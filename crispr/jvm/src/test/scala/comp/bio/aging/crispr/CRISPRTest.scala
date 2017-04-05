@@ -15,8 +15,8 @@ class CRISPRTest extends WordSpec with Matchers{
       val pams = cas9.searchesOf(dna, cas9.pam,  0, 20, 0)
       pams shouldEqual List(24, 25)
       cas9.pamSearch(dna) shouldEqual pams
-      cas9.guideSearch(dna, false).map(_._1 + Math.abs(cas9.guideEnd)) shouldEqual pams
-      cas9.guideSearch(dna, true).map(_._1 + Math.abs(cas9.guideEnd)) shouldEqual pams
+      cas9.guideSearchIn(dna, false).map(_._1 + Math.abs(cas9.guideEnd)) shouldEqual pams
+      cas9.guideSearchIn(dna, true).map(_._1 + Math.abs(cas9.guideEnd)) shouldEqual pams
       val cuts = cas9.cuts(pams).map(_._1)
       dna.splitAt(cuts.head) shouldEqual ("ACAGCTGATCTCCAGATATGA", "CCATGGGTT")
       dna.splitAt(cuts.tail.head) shouldEqual ("ACAGCTGATCTCCAGATATGAC", "CATGGGTT")
@@ -29,8 +29,8 @@ class CRISPRTest extends WordSpec with Matchers{
       val dna2 = dnas(1)
       val pams2: List[Int] = cas9.searchesOf(dna2, cas9.pam, 0, 20, 0)
       cas9.pamSearch(dna2) shouldEqual pams2
-      cas9.guideSearch(dna2, false).map(_._1 + Math.abs(cas9.guideEnd)) shouldEqual pams2
-      cas9.guideSearch(dna2, true).map(_._1 + Math.abs(cas9.guideEnd)) shouldEqual pams2
+      cas9.guideSearchIn(dna2, false).map(_._1 + Math.abs(cas9.guideEnd)) shouldEqual pams2
+      cas9.guideSearchIn(dna2, true).map(_._1 + Math.abs(cas9.guideEnd)) shouldEqual pams2
       val cuts2 = cas9.cuts(pams2).map(_._1)
       dna2.splitAt(cuts2.head) shouldEqual ("CAGCTGATCTCCAGATATGA", "CCATGGGTTT")
       dna2.splitAt(cuts2.tail.head) shouldEqual ("CAGCTGATCTCCAGATATGAC", "CATGGGTTT")
@@ -53,9 +53,11 @@ class CRISPRTest extends WordSpec with Matchers{
       cpf1.searchesOf(dna1 + cpf1.pam + "AGC", cpf1.pam, 0 , 0, 23).length shouldEqual 1
       val pams = cpf1.searchesOf(dna1, cpf1.pam, 0, 0 , 23)
       cpf1.pamSearch(dna1) shouldEqual pams
-      cpf1.guideSearch(dna1, false).map(_._1 - cpf1.pam.length) shouldEqual pams
-      cpf1.guideSearch(dna1, true).map(_._1) shouldEqual pams
+      cpf1.guideSearchIn(dna1, false).map(_._1 - cpf1.pam.length) shouldEqual pams
+      cpf1.guideSearchIn(dna1, true).map(_._1) shouldEqual pams
       val cuts = cpf1.cuts(pams)
+      println("===============================================")
+      println(pams)
       cuts shouldEqual  List((22,27))
 
       dna1.splitAt(cuts.head._1) shouldEqual("TTTACAGTGACGTCGGTTAGGA", "CACTG")

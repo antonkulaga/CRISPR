@@ -27,8 +27,8 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
     val regions: RDD[(String, ReferenceRegion)] = contigFragmentRDD.findRegions(guideList).flatMapValues(v=>v)
     regions.flatMap{ case (sequence, region) =>
       val start = region.start
-      val pams: Seq[(Long, String)] = guideSearch(sequence, false)
-      cutsGuided(pams).map{case (guide, (f, b)) =>
+      val guides: Seq[(Long, String)] = guideSearchIn(sequence, false)
+      cutsGuided(guides, false).map{case (guide, (f, b)) =>
         CutDS( guide,
           ReferencePosition(region.referenceName, start + f) ,
           ReferencePosition(region.referenceName, start + b)
@@ -46,8 +46,8 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
     contigFragmentRDD.rdd.flatMap{ fragment=>
       val start = fragment.getFragmentStartPosition
       val sequence = fragment.getFragmentSequence
-      val pams: Seq[(Long, String)] = guideSearch(sequence, false)
-      cutsGuided(pams).map{case (guide, (f, b)) =>
+      val guides: Seq[(Long, String)] = guideSearchIn(sequence, false)
+      cutsGuided(guides, false).map{case (guide, (f, b)) =>
         CutDS( guide,
           ReferencePosition(fragment.getContig.getContigName, start + f) ,
           ReferencePosition(fragment.getContig.getContigName, start + b)
@@ -56,16 +56,18 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
     }
   }
 
-  def filterByGC(contigFragmentRDD:NucleotideContigFragmentRDD, minPercent: Int = 20, maxPercent: Int = 80): NucleotideContigFragmentRDD = {
+  def filterByGC(contigFragmentRDD:NucleotideContigFragmentRDD, minPercent: Int = 20, maxPercent: Int = 75): NucleotideContigFragmentRDD = {
     contigFragmentRDD.transform{
       rdd=> rdd.filter{
         frag =>
           val seq = frag.getFragmentSequence.toUpperCase
-          val percent = seq.count{ case 'G' | 'C' => true} * 100 / seq.length
+          val percent = seq.count{
+            case 'G' | 'C' => true
+            case _ => false
+          } * 100 / seq.length
           minPercent < percent && percent < maxPercent
       }
     }
-
   }
 
   /**
@@ -93,7 +95,7 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
                                      addBefore: Int = 0,
                                      addAfter: Int = 0): List[NucleotideContigFragment] = {
 
-      guideSearch(fragment.getFragmentSequence, includePam, addBefore, addAfter).map{
+      guideSearchIn(fragment.getFragmentSequence, includePam, addBefore, addAfter).map{
         case (index, seq)=>
           NucleotideContigFragment
             .newBuilder(fragment)

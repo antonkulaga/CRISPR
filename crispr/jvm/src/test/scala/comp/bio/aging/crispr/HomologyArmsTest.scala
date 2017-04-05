@@ -20,6 +20,8 @@ class HomologyArmsTest extends SparkTestBase {
     "CAGCTGATCTCCAGATTTGACCATGGGTTT",
     "CCAGAAGTTTGAGCCACAAACCCATGGTCA")
 
+
+
   lazy val dic = new SequenceDictionary(Vector(SequenceRecord("test", initialDNAs.length + armLen * 2)))
 
   lazy val cas9 = new Cas9ADAM
@@ -115,18 +117,35 @@ class HomologyArmsTest extends SparkTestBase {
   }
 
 
-  /*
+  val initialCpf1DNAs: Vector[String] = Vector(
+    "TTTAAACTACGAGCGCTTTGTGCCCCG",
+    "TTTAATCCTTGGTGGTGAAGTTGGCTA",
+    "TTTACACCGAGTGGTGGGTACGGTGGT",
+    "TTTAAACCTCGTCCGCCACGACTACCG"
+  )
+
   "compute homology arms for cpf1" in {
-    val fragments = prepareFragments()
+    val left = ("A" * armLen).sliding(30, 30).toVector
+    val right = ("T" * armLen).sliding(30, 30).toVector
+    val dnas = left ++ initialCpf1DNAs ++ right
+    val fragments = prepareFragments(dnas)
     val guides = cpf1.guidome(fragments, includePam = true)
-    val cuts = cpf1.cutome(guides)
-    val arms = cpf1.arms(fragments, cuts, 1500L, 1500L).collect()
-    arms.size shouldEqual 5
-    arms.forall{case KnockIn(_,leftSeq, leftRegion, rightSeq, rightRegion)=>
+    val cuts: RDD[CutDS] = cpf1.cutome(guides)
+    val top: RDD[Long] = cuts.map(_.top.pos)
+    top.collect().toList shouldEqual List(1500L + 4 + 18, 1500L + 4 + 18 + 27, 1500L + 4 + 18 + 27 *2, 1500L + 4 + 18 + 27 *3)
+
+    val arms1 = cpf1.arms(fragments, cuts, 1500L, 1500L, allowOverlap = false).collect()
+    arms1.size shouldEqual 4
+    arms1.forall{case KnockIn(_,leftSeq, leftRegion, rightSeq, rightRegion)=>
       leftSeq.length == 1500 && rightSeq.length == 1500 &&
         leftRegion.length == 1500L && rightRegion.length == 1500L
     }
+    val arms2 = cpf1.arms(fragments, cuts, 1500L, 1500L, allowOverlap = true).collect()
+    arms2.size shouldEqual 4
+    arms2.forall{case KnockIn(_,leftSeq, leftRegion, rightSeq, rightRegion)=>
+      leftSeq.length == 1500 + 5 && rightSeq.length == 1500 + 5 &&
+        leftRegion.length == 1500L + 5 && rightRegion.length == 1500L + 5
+    }
   }
-  */
 
 }

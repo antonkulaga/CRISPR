@@ -56,8 +56,6 @@ class CRISPRTest extends WordSpec with Matchers{
       cpf1.guideSearchIn(dna1, false).map(_._1 - cpf1.pam.length) shouldEqual pams
       cpf1.guideSearchIn(dna1, true).map(_._1) shouldEqual pams
       val cuts = cpf1.cuts(pams)
-      println("===============================================")
-      println(pams)
       cuts shouldEqual  List((22,27))
 
       dna1.splitAt(cuts.head._1) shouldEqual("TTTACAGTGACGTCGGTTAGGA", "CACTG")

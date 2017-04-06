@@ -2,12 +2,13 @@ package comp.bio.aging.crispr
 
 import com.holdenkarau.spark.testing.SharedSparkContext
 import org.bdgenomics.adam.models.{SequenceDictionary, SequenceRecord}
+import comp.bio.aging.playground.extensions._
 import org.bdgenomics.adam.rdd.contig.NucleotideContigFragmentRDD
 import org.bdgenomics.adam.rdd.read.AlignmentRecordRDD
 import org.bdgenomics.formats.avro.{Contig, NucleotideContigFragment}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 import org.bdgenomics.adam.rdd.ADAMContext._
-
+import comp.bio.aging.playground.extensions.stringSeqExtensions._
 
 class GuidomeTest extends SparkTestBase{
 
@@ -67,6 +68,23 @@ class GuidomeTest extends SparkTestBase{
       cuts shouldEqual rightCuts
     }
 
+    "check for mismatches" in {
+      val cas9 = new Cas9ADAM
+      val dic = new SequenceDictionary(Vector(SequenceRecord("test", merged.length)))
+      val rdd = sc.parallelize(dnas2fragments(dnas))
+      val fragments = new NucleotideContigFragmentRDD(rdd, dic)
+      fragments.findRegionsWithMismatches(List("CTGATCTCCAGATATGACCATGG"), 2).collect().head._2.size shouldEqual 2
+
+      val reverse = "ATGATCTCCAGATATGACCATGC".reverse.complement
+      val one = Vector("CTGATCTCCAGATATGACCATGG", "ATGATCTCCAGATATGACCATGG", "ATGATCTCCAGATATGACCATGC", reverse)
+      val efragments = new NucleotideContigFragmentRDD(sc.parallelize(dnas2fragments(one)), dic)
+      efragments.findRegionsWithMismatches(List("CTGATCTCCAGATATGACCATGG"), 0, false, true).collect().head._2.size shouldEqual 1
+      efragments.findRegionsWithMismatches(List("CTGATCTCCAGATATGACCATGG"), 1, false, true).collect().head._2.size shouldEqual 2
+      efragments.findRegionsWithMismatches(List("CTGATCTCCAGATATGACCATGG"), 2, false, true).collect().head._2.size shouldEqual 3
+      efragments.findRegionsWithMismatches(List("CTGATCTCCAGATATGACCATGG"), 1, true, true).collect().head._2.size shouldEqual 2
+      efragments.findRegionsWithMismatches(List("CTGATCTCCAGATATGACCATGG"), 2, true, true).collect().head._2.size shouldEqual 4
+    }
+
   }
 
   "Cpf1ADAM" should {
@@ -122,12 +140,7 @@ class GuidomeTest extends SparkTestBase{
       val guides: NucleotideContigFragmentRDD = cpf1.guidome(fragments, includePam = true, flankAdjacent = true)
       val rightForwardCuts = Set(0L, 16L, 27L, 54L, 81L).map(_ + 18L + 4L)
       val rightBackwardCuts = Set(0L, 16L, 27L, 54L, 81L).map(_ + 23L + 4L)
-      //println("CPF1 GUIDES =")
-      //pprint.pprintln(guides.rdd.collect())
       val cutome = cpf1.cutome(guides)
-      //println("CPF1 CUTS =")
-      //pprint.pprintln(cutome.collect)
-
       cutome.map{ cut => cut.top.start }.collect().toSet shouldEqual rightForwardCuts
       cutome.map{ cut => cut.bottom.start }.collect().toSet shouldEqual rightBackwardCuts
     }

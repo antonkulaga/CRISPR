@@ -12,7 +12,6 @@ import scala.collection.immutable.{List, Nil}
 
 trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
 
-
   /**
     * In order to include crispr's that are on the board of several regions
     * @param contigFragmentRDD

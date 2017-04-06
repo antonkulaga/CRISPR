@@ -5,6 +5,7 @@ import com.holdenkarau.spark.testing.SharedSparkContext
 import org.apache.spark.rdd.RDD
 import org.bdgenomics.adam.models.{ReferencePosition, SequenceDictionary, SequenceRecord}
 import org.bdgenomics.adam.rdd.contig.NucleotideContigFragmentRDD
+import org.bdgenomics.formats.avro.NucleotideContigFragment
 import org.scalatest.{Matchers, WordSpec}
 
 /**
@@ -82,7 +83,6 @@ class HomologyArmsTest extends SparkTestBase {
     val left2 =  s"TCCAGATATGACCATGGGT${NotI}T" +: s"CCAGAAG${MluIRev}CCACA${NruI}TGGTCA" +: left.tail.tail
     val right2 = right.tail :+ s"C${NruI}CAGAAGTTTGAGCCCATGGTCA"
     val fragments2 = prepareFragments(left2 ++ initialDNAs ++ right2)
-
     val guides2 = cas9.guidome(fragments2, includePam = true)
     val cuts2 = cas9.cutome(guides2)
     val arms2 = cas9.arms(fragments2, cuts2, 1500L, 1500L).collect()
@@ -91,6 +91,14 @@ class HomologyArmsTest extends SparkTestBase {
       leftSeq.length == 1500 && rightSeq.length == 1500 &&
         leftRegion.length == 1500L && rightRegion.length == 1500L
     }
+    val gds: RDD[String] = guides2.rdd.map(f=> f.getFragmentSequence.substring(0, f.getFragmentLength.toInt - 3))
+    val gfrags: RDD[(String, List[NucleotideContigFragment])] = cas9.guidomeByGuideList(guides2, gds.collect.toList, true)
+    val ggcuts2: RDD[(String, List[CutDS])] = cas9.cutomeFromGuideFragments(gfrags)
+    val cuts2Set = cuts2.collect().toSet
+
+    val gcuts2: Set[CutDS] = ggcuts2.values.flatMap(f=>f).collect().toSet
+    gcuts2 shouldEqual cuts2Set
+    cas9.armsGuided(fragments2, ggcuts2, 1500L, 1500L).collect() shouldEqual arms2
 
     val armsNotI = cas9.arms(fragments2, cuts2, 1500L, 1500L, RestrictionEnzymes.enzymesSites(Set("NotI"), reverseComplement = true)).collect()
     val withNotI = arms2.toList.exists(k=>k.leftArm.contains("GCGGCCGC") || k.rightArm.contains("GCGGCCGC") )
@@ -140,12 +148,26 @@ class HomologyArmsTest extends SparkTestBase {
       leftSeq.length == 1500 && rightSeq.length == 1500 &&
         leftRegion.length == 1500L && rightRegion.length == 1500L
     }
+
+    val gds: RDD[String] = guides.rdd.map(f=> f.getFragmentSequence.substring(4, f.getFragmentLength.toInt))
+    val gfrags: RDD[(String, List[NucleotideContigFragment])] = cpf1.guidomeByGuideList(guides, gds.collect.toList, true)
+    val ggcuts: RDD[(String, List[CutDS])] = cpf1.cutomeFromGuideFragments(gfrags)
+    val cutsSet = cuts.collect().toSet
+    val gcuts: Set[CutDS] = ggcuts.values.flatMap(f=>f).collect().toSet
+    gcuts shouldEqual cutsSet
+    cpf1.armsGuided(fragments, ggcuts, 1500L, 1500L, allowOverlap = false).collect().toSet shouldEqual arms1.toSet
+
+
     val arms2 = cpf1.arms(fragments, cuts, 1500L, 1500L, allowOverlap = true).collect()
     arms2.size shouldEqual 4
     arms2.forall{case KnockIn(_,leftSeq, leftRegion, rightSeq, rightRegion)=>
       leftSeq.length == 1500 + 5 && rightSeq.length == 1500 + 5 &&
         leftRegion.length == 1500L + 5 && rightRegion.length == 1500L + 5
     }
+
+    cpf1.armsGuided(fragments, ggcuts, 1500L, 1500L, allowOverlap = true).collect().toSet shouldEqual arms2.toSet
+
+
   }
 
 }

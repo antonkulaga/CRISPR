@@ -18,20 +18,20 @@ trait CRISPR
   /**
     * Searchs for the guides to match
     * @param where string in which we search for guides
-    * @param includePam
+    * @param includePamInResults
     * @param contextBefore
     * @param contextAfter
     * @return
     */
-  def guideSearchIn(where: String, includePam: Boolean = false, contextBefore: Int = 0, contextAfter: Int = 0): List[(Long, String)] = {
+  def guideSearchIn(where: String, includePamInResults: Boolean = false, contextBefore: Int = 0, contextAfter: Int = 0): List[(Long, String)] = {
     val (spaceBeforePam, spaceAfterPam) = if(guideEnd < 0)
         (contextBefore - guideEnd, contextAfter)
     else
         (contextBefore, guideEnd + contextAfter)
 
-    val takeBeforePam = if(guideEnd >= 0 && !includePam) spaceBeforePam - pam.length else spaceBeforePam
+    val takeBeforePam = if(guideEnd >= 0 && !includePamInResults) spaceBeforePam - pam.length else spaceBeforePam
 
-    val takeAfterPam = if(includePam || guideEnd>=0) pam.length + spaceAfterPam else spaceAfterPam
+    val takeAfterPam = if(includePamInResults || guideEnd>=0) pam.length + spaceAfterPam else spaceAfterPam
 
     searchesOf(where, pam, 0, spaceBeforePam , spaceAfterPam).map{ i=>
         val start = i - takeBeforePam
@@ -40,6 +40,7 @@ trait CRISPR
     }
 
   }
+
 
   /**
     * Here we search for pam sequences
@@ -57,9 +58,9 @@ trait CRISPR
     )
   }
 
-  def cutsGuided(guided: Seq[(Long, String)], includePam: Boolean): Seq[(String, (Long, Long))] = guided.map{ case (guideStart, guide) =>
+  def cutsGuided(guided: Seq[(Long, String)], pamInGuides: Boolean): Seq[(String, (Long, Long))] = guided.map{ case (guideStart, guide) =>
     val p = if(guideEnd < 0) guideStart - guideEnd else
-      if(includePam) guideStart else guideStart - pam.length
+      if(pamInGuides) guideStart else guideStart - pam.length
     guide -> (
       p + (if (forwardCut < 0) forwardCut else forwardCut + pam.length) ,
       p + (if (reverseCut < 0) reverseCut else reverseCut + pam.length)
@@ -68,7 +69,7 @@ trait CRISPR
 
 
 
-  def cutsGuided(pams: List[Int], where: String): List[(String, (Long, Long))] = pams.map{p=>
+  def cutByPams(pams: List[Int], where: String): List[(String, (Long, Long))] = pams.map{ p=>
     val guide = if(guideEnd < 0) where.substring(p + guideEnd, p) else where.substring(p + pam.length, p + pam.length + guideEnd)
       guide -> (
         p + (if (forwardCut < 0) forwardCut else forwardCut + pam.length): Long ,

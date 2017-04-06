@@ -21,19 +21,38 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
     contigFragmentRDD.flankAdjacentFragments(Math.abs(this.guideEnd + (if(includePam) pam.length else 0) -1) + additional)
   }
 
-  def cutome(contigFragmentRDD: NucleotideContigFragmentRDD, guideList: List[String]): RDD[CutDS] = {
-    val guides = guideList.flatten
-    val regions: RDD[(String, ReferenceRegion)] = contigFragmentRDD.findRegions(guideList).flatMapValues(v=>v)
-    regions.flatMap{ case (sequence, region) =>
-      val start = region.start
-      val guides: Seq[(Long, String)] = guideSearchIn(sequence, false)
-      cutsGuided(guides, false).map{case (guide, (f, b)) =>
-        CutDS( guide,
-          ReferencePosition(region.referenceName, start + f) ,
-          ReferencePosition(region.referenceName, start + b)
-        )
+  def guidomeByGuideList(guidomeFragments: NucleotideContigFragmentRDD,
+                         guideList: List[String],
+                       pamsInGuidome: Boolean = true): RDD[(String, List[NucleotideContigFragment])] = {
+   val guides = guideList.distinct
+   if(pamsInGuidome) {
+     if(guideEnd < 0) guidomeFragments.rdd.flatMap{ fr =>
+       val seq = fr.getFragmentSequence.substring(0, fr.getFragmentLength.toInt - pam.length)
+       guides.collect{ case g if g == seq => g -> List(fr)}
+     } else {
+       guidomeFragments.rdd.flatMap{ fr=>
+         val seq = fr.getFragmentSequence.substring(pam.length)
+         guides.collect{ case g if g == seq => g -> List(fr)}
+       }
+     }
+   } else guidomeFragments.rdd.flatMap{ fr=>
+       guides.collect{ case g if g == fr.getFragmentSequence => g -> List(fr)}
+     }
+  }.reduceByKey(_ ++ _)
+
+  def cutomeFromGuideFragments(guideFragments: RDD[(String, List[NucleotideContigFragment])]): RDD[(String, List[CutDS])] = {
+      guideFragments.mapValues{ frgs=> frgs.map{ fragment =>
+        val guide = if(guideEnd < 0 )
+          fragment.getFragmentSequence.substring(0, fragment.getFragmentLength.toInt - pam.length)
+        else
+          fragment.getFragmentSequence.substring(pam.length)
+          val pamEdge: Long = if(guideEnd >= 0 ) fragment.getFragmentStartPosition + pam.length else fragment.getFragmentEndPosition - pam.length
+          CutDS( guide,
+            ReferencePosition(fragment.getContig.getContigName, pamEdge + forwardCut) ,
+            ReferencePosition(fragment.getContig.getContigName, pamEdge + reverseCut)
+          )
+        }
       }
-    }
   }
 
   /**

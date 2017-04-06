@@ -20,10 +20,10 @@ class CRISPRTest extends WordSpec with Matchers{
       val cuts = cas9.cuts(pams).map(_._1)
       dna.splitAt(cuts.head) shouldEqual ("ACAGCTGATCTCCAGATATGA", "CCATGGGTT")
       dna.splitAt(cuts.tail.head) shouldEqual ("ACAGCTGATCTCCAGATATGAC", "CATGGGTT")
-      val cutsGuided = cas9.cutsGuided(pams, dna)
-      cutsGuided.map(_._2._2) shouldEqual cuts
-      cutsGuided.head._1 shouldEqual "CTGATCTCCAGATATGACCA"
-      cutsGuided.tail.head._1 shouldEqual "TGATCTCCAGATATGACCAT"
+      val cutsByPam = cas9.cutByPams(pams, dna)
+      cutsByPam.map(_._2._2) shouldEqual cuts
+      cutsByPam.head._1 shouldEqual "CTGATCTCCAGATATGACCA"
+      cutsByPam.tail.head._1 shouldEqual "TGATCTCCAGATATGACCAT"
 
 
       val dna2 = dnas(1)
@@ -34,10 +34,10 @@ class CRISPRTest extends WordSpec with Matchers{
       val cuts2 = cas9.cuts(pams2).map(_._1)
       dna2.splitAt(cuts2.head) shouldEqual ("CAGCTGATCTCCAGATATGA", "CCATGGGTTT")
       dna2.splitAt(cuts2.tail.head) shouldEqual ("CAGCTGATCTCCAGATATGAC", "CATGGGTTT")
-      val cutsGuided2 = cas9.cutsGuided(pams2, dna2)
-      cutsGuided2.map(_._2._2) shouldEqual cuts2
-      cutsGuided2.head._1 shouldEqual "CTGATCTCCAGATATGACCA"
-      cutsGuided2.tail.head._1 shouldEqual "TGATCTCCAGATATGACCAT"
+      val cutsByPam2 = cas9.cutByPams(pams2, dna2)
+      cutsByPam2.map(_._2._2) shouldEqual cuts2
+      cutsByPam2.head._1 shouldEqual "CTGATCTCCAGATATGACCA"
+      cutsByPam2.tail.head._1 shouldEqual "TGATCTCCAGATATGACCAT"
     }
 
   }
@@ -60,9 +60,9 @@ class CRISPRTest extends WordSpec with Matchers{
 
       dna1.splitAt(cuts.head._1) shouldEqual("TTTACAGTGACGTCGGTTAGGA", "CACTG")
       dnaComp.splitAt(cuts.head._2) shouldEqual ("TTTACAGTGACGTCGGTTAGGACACTG".complement, "")
-      val cutsGuided = cpf1.cutsGuided(pams, dna1)
-      cutsGuided.head._2 shouldEqual cuts.head
-      cutsGuided.head._1 shouldEqual "CAGTGACGTCGGTTAGGACACTG"
+      val cutsByPams = cpf1.cutByPams(pams, dna1)
+      cutsByPams.head._2 shouldEqual cuts.head
+      cutsByPams.head._1 shouldEqual "CAGTGACGTCGGTTAGGACACTG"
     }
   }
 

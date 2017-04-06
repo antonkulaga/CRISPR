@@ -11,6 +11,12 @@ import scala.collection.immutable.{List, Nil}
 
 trait HomologyArms {
 
+  def armsGuided(fragmentRDD: NucleotideContigFragmentRDD,
+           guidedCats: RDD[(String, List[CutDS])],
+           left: Long, right: Long, avoidSites: Set[String] = Set.empty, allowOverlap: Boolean = true): RDD[KnockIn] = {
+    arms(fragmentRDD, guidedCats.values.flatMap(f=>f), left, right, avoidSites, allowOverlap)
+  }
+
   def arms(fragmentRDD: NucleotideContigFragmentRDD,
            cuts: RDD[CutDS],
            left: Long, right: Long, avoidSites: Set[String] = Set.empty, allowOverlap: Boolean = true): RDD[KnockIn] = {

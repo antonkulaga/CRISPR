@@ -49,11 +49,19 @@ class GuidomeTest extends SparkTestBase{
         .collect()
         .toSet shouldEqual rightResults
 
-
-      cas9.guidome(fragments, includePam = true, flankAdjacent = true).rdd
+      val gds = cas9.guidome(fragments, includePam = true, flankAdjacent = true)
+      gds.rdd
         .map(fragment=>(fragment.getFragmentStartPosition, fragment.getFragmentSequence))
         .collect()
         .toSet shouldEqual rightResults
+
+      val lst =  List("CTGATCTCCAAAAAAGACCA", "CTGATCTCCAGATATGACCA", "TGATCTCCAGATATGACCAT","AAGTTTGAGCCACAAACCCA")
+      val guides = cas9.guidomeByGuideList(gds, lst, true).mapValues(_.map(_.getFragmentStartPosition).toSet)
+      guides.collect().toSet shouldEqual Set(
+        "CTGATCTCCAGATATGACCA" -> Set(4L, 33L),
+        "TGATCTCCAGATATGACCAT" -> Set(5L, 34L),
+        "AAGTTTGAGCCACAAACCCA" -> Set(64L)
+      )
     }
 
     "Cut from guidome in a right place" in {

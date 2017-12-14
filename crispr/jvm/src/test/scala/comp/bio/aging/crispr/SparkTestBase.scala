@@ -1,7 +1,10 @@
 package comp.bio.aging.crispr
 
 import com.holdenkarau.spark.testing.SharedSparkContext
-import org.bdgenomics.formats.avro.{Contig, NucleotideContigFragment}
+import comp.bio.aging.playground.extensions.FeatureType
+import org.apache.spark.SparkConf
+import org.bdgenomics.adam.models.SequenceRecord
+import org.bdgenomics.formats.avro.{Contig, Feature, NucleotideContigFragment, Strand}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
 /**
@@ -11,21 +14,56 @@ class SparkTestBase extends WordSpec with Matchers with BeforeAndAfterAll with S
 
   def sparkContext = sc
 
-  def contig() = {
-    val c= new Contig()
-    c.setContigName("test")
-    c
+
+  override def conf = {
+    new SparkConf().
+      setMaster("local[*]").
+      setAppName("test").
+      set("spark.ui.enabled", "false").
+      set("spark.app.id", appID).
+      set("spark.driver.host", "localhost").
+      set("spark.serializer", "org.apache.spark.serializer.KryoSerializer").
+      set("spark.kryo.registrator", "org.bdgenomics.adam.serialization.ADAMKryoRegistrator").
+      set("spark.kryoserializer.buffer", "16m").
+      set("spark.kryoserializer.buffer.max.mb", "1024").
+      set("spark.kryo.referenceTracking", "true")
   }
 
+
+  lazy val test = "test"
+
   protected def makeFragment(str: String, start: Long) = {
+
     NucleotideContigFragment.newBuilder()
-      .setContig(contig())
-      .setFragmentStartPosition(start)
-      .setFragmentLength(str.length: Long)
-      .setFragmentSequence(str)
-      .setFragmentEndPosition(start + str.length)
+      .setContigName(test)
+      .setStart(start)
+      .setLength(str.length: Long)
+      .setSequence(str)
+      .setEnd(start + str.length)
       .build()
   }
+
+  def makeFeature(sequence: String, start: Long,
+                  contigName: String,
+                  featureType: FeatureType,
+                  geneId: String = "",
+                  transcriptId: String = "",
+                  exondId: String = ""
+                 ): Feature = {
+    Feature.newBuilder()
+      .setStart(start)
+      .setEnd(start + sequence.length)
+      .setGeneId(geneId)
+      .setTranscriptId(transcriptId)
+      .setExonId(exondId)
+      .setFeatureType(featureType.entryName)
+      .setContigName(contigName)
+      .setStrand(Strand.FORWARD)
+      .clearAttributes()
+      .build()
+  }
+
+
 
   def dnas2fragments(dnas: Seq[String]): List[NucleotideContigFragment] = {
     val (_, frags) = dnas.foldLeft((0L, List.empty[NucleotideContigFragment]))

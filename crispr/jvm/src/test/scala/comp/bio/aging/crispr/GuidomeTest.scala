@@ -43,20 +43,20 @@ class GuidomeTest extends SparkTestBase{
       val cas9 = new Cas9ADAM
       val dic = new SequenceDictionary(Vector(SequenceRecord("test", merged.length)))
       val rdd = sc.parallelize(dnas2fragments(dnas))
-      val fragments = new NucleotideContigFragmentRDD(rdd, dic)
+      val fragments = NucleotideContigFragmentRDD(rdd, dic)
       cas9.guidome(fragments, includePam = true).rdd
-        .map(fragment => (fragment.getFragmentStartPosition, fragment.getFragmentSequence))
+        .map(fragment => (fragment.getStart, fragment.getSequence))
         .collect()
         .toSet shouldEqual rightResults
 
       val gds = cas9.guidome(fragments, includePam = true, flankAdjacent = true)
       gds.rdd
-        .map(fragment=>(fragment.getFragmentStartPosition, fragment.getFragmentSequence))
+        .map(fragment=>(fragment.getStart, fragment.getSequence))
         .collect()
         .toSet shouldEqual rightResults
 
       val lst =  List("CTGATCTCCAAAAAAGACCA", "CTGATCTCCAGATATGACCA", "TGATCTCCAGATATGACCAT","AAGTTTGAGCCACAAACCCA")
-      val guides = cas9.guidomeByGuideList(gds, lst, true).mapValues(_.map(_.getFragmentStartPosition).toSet)
+      val guides = cas9.guidomeByGuideList(gds, lst, true).mapValues(_.map(_.getStart).toSet)
       guides.collect().toSet shouldEqual Set(
         "CTGATCTCCAGATATGACCA" -> Set(4L, 33L),
         "TGATCTCCAGATATGACCAT" -> Set(5L, 34L),
@@ -68,7 +68,7 @@ class GuidomeTest extends SparkTestBase{
       val cas9 = new Cas9ADAM
       val dic = new SequenceDictionary(Vector(SequenceRecord("test", merged.length)))
       val rdd = sc.parallelize(dnas2fragments(dnas))
-      val fragments = new NucleotideContigFragmentRDD(rdd, dic)
+      val fragments = NucleotideContigFragmentRDD(rdd, dic)
       val guides: NucleotideContigFragmentRDD = cas9.guidome(fragments, includePam = true)
       val rightCuts = Set(21L, 22L, 50L, 51L, 81L)
       val cuts: Set[Long] = cas9.cutome(guides).map{ cut =>
@@ -80,12 +80,12 @@ class GuidomeTest extends SparkTestBase{
       val cas9 = new Cas9ADAM
       val dic = new SequenceDictionary(Vector(SequenceRecord("test", merged.length)))
       val rdd = sc.parallelize(dnas2fragments(dnas))
-      val fragments = new NucleotideContigFragmentRDD(rdd, dic)
+      val fragments = NucleotideContigFragmentRDD(rdd, dic)
       fragments.findRegionsWithMismatches(List("CTGATCTCCAGATATGACCATGG"), 2).collect().head._2.size shouldEqual 2
 
       val reverse = "ATGATCTCCAGATATGACCATGC".reverse.complement
       val one = Vector("CTGATCTCCAGATATGACCATGG", "ATGATCTCCAGATATGACCATGG", "ATGATCTCCAGATATGACCATGC", reverse)
-      val efragments = new NucleotideContigFragmentRDD(sc.parallelize(dnas2fragments(one)), dic)
+      val efragments = NucleotideContigFragmentRDD(sc.parallelize(dnas2fragments(one)), dic)
       efragments.findRegionsWithMismatches(List("CTGATCTCCAGATATGACCATGG"), 0, false, true).collect().head._2.size shouldEqual 1
       efragments.findRegionsWithMismatches(List("CTGATCTCCAGATATGACCATGG"), 1, false, true).collect().head._2.size shouldEqual 2
       efragments.findRegionsWithMismatches(List("CTGATCTCCAGATATGACCATGG"), 2, false, true).collect().head._2.size shouldEqual 3
@@ -127,15 +127,15 @@ class GuidomeTest extends SparkTestBase{
       val cpf1 = new Cpf1ADAM
       val dic = new SequenceDictionary(Vector(SequenceRecord("test", merged.length)))
       val rdd = sc.parallelize(dnas2fragments(dnas))
-      val fragments = new NucleotideContigFragmentRDD(rdd, dic)
+      val fragments = NucleotideContigFragmentRDD(rdd, dic)
       cpf1.guidome(fragments, includePam = true, flankAdjacent = true).rdd
-        .map(fragment => (fragment.getFragmentStartPosition, fragment.getFragmentSequence))
+        .map(fragment => (fragment.getStart, fragment.getSequence))
         .collect()
         .toSet shouldEqual rightResults
 
 
       cpf1.guidome(fragments, includePam = true, flankAdjacent = true).rdd
-        .map(fragment=>(fragment.getFragmentStartPosition, fragment.getFragmentSequence))
+        .map(fragment=>(fragment.getStart, fragment.getSequence))
         .collect()
         .toSet shouldEqual rightResults
     }
@@ -144,7 +144,7 @@ class GuidomeTest extends SparkTestBase{
       val cpf1 = new Cpf1ADAM
       val dic = new SequenceDictionary(Vector(SequenceRecord("test", merged.length)))
       val rdd = sc.parallelize(dnas2fragments(dnas))
-      val fragments = new NucleotideContigFragmentRDD(rdd, dic)
+      val fragments = NucleotideContigFragmentRDD(rdd, dic)
       val guides: NucleotideContigFragmentRDD = cpf1.guidome(fragments, includePam = true, flankAdjacent = true)
       val rightForwardCuts = Set(0L, 16L, 27L, 54L, 81L).map(_ + 18L + 4L)
       val rightBackwardCuts = Set(0L, 16L, 27L, 54L, 81L).map(_ + 23L + 4L)

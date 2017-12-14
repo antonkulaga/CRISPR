@@ -106,7 +106,6 @@ project/boot/
 project/plugins/project/
 .idea
 .idea/*
-*.sc
 
 # Scala-IDE specific
 .scala_dependencies

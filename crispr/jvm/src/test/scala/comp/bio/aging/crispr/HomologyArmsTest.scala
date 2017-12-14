@@ -15,13 +15,10 @@ class HomologyArmsTest extends SparkTestBase {
 
   lazy val armLen = 1500
 
-
   val initialDNAs: Seq[String] =  Vector(
     "ACAGCTGATCTCCAGATATGACCATGGGTT",
     "CAGCTGATCTCCAGATTTGACCATGGGTTT",
     "CCAGAAGTTTGAGCCACAAACCCATGGTCA")
-
-
 
   lazy val dic = new SequenceDictionary(Vector(SequenceRecord("test", initialDNAs.length + armLen * 2)))
 
@@ -34,7 +31,7 @@ class HomologyArmsTest extends SparkTestBase {
 
   def prepareFragments(dnas: Seq[String]): NucleotideContigFragmentRDD = {
     val rdd = sc.parallelize(dnas2fragments(dnas))
-    new NucleotideContigFragmentRDD(rdd, dic)
+    NucleotideContigFragmentRDD(rdd, dic)
   }
 
   "check list of restriction enzymes" in {
@@ -91,7 +88,7 @@ class HomologyArmsTest extends SparkTestBase {
       leftSeq.length == 1500 && rightSeq.length == 1500 &&
         leftRegion.length == 1500L && rightRegion.length == 1500L
     }
-    val gds: RDD[String] = guides2.rdd.map(f=> f.getFragmentSequence.substring(0, f.getFragmentLength.toInt - 3))
+    val gds: RDD[String] = guides2.rdd.map(f=> f.getSequence.substring(0, f.getLength.toInt - 3))
     val gfrags: RDD[(String, List[NucleotideContigFragment])] = cas9.guidomeByGuideList(guides2, gds.collect.toList, true)
     val ggcuts2: RDD[(String, List[CutDS])] = cas9.cutomeFromGuideFragments(gfrags)
     val cuts2Set = cuts2.collect().toSet
@@ -149,7 +146,7 @@ class HomologyArmsTest extends SparkTestBase {
         leftRegion.length == 1500L && rightRegion.length == 1500L
     }
 
-    val gds: RDD[String] = guides.rdd.map(f=> f.getFragmentSequence.substring(4, f.getFragmentLength.toInt))
+    val gds: RDD[String] = guides.rdd.map(f=> f.getSequence.substring(4, f.getLength.toInt))
     val gfrags: RDD[(String, List[NucleotideContigFragment])] = cpf1.guidomeByGuideList(guides, gds.collect.toList, true)
     val ggcuts: RDD[(String, List[CutDS])] = cpf1.cutomeFromGuideFragments(gfrags)
     val cutsSet = cuts.collect().toSet

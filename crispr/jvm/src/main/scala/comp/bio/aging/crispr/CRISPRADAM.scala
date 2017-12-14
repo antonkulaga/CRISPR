@@ -27,29 +27,29 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
    val guides = guideList.distinct
    if(pamsInGuidome) {
      if(guideEnd < 0) guidomeFragments.rdd.flatMap{ fr =>
-       val seq = fr.getFragmentSequence.substring(0, fr.getFragmentLength.toInt - pam.length)
+       val seq = fr.getSequence.substring(0, fr.getLength.toInt - pam.length)
        guides.collect{ case g if g == seq => g -> List(fr)}
      } else {
        guidomeFragments.rdd.flatMap{ fr=>
-         val seq = fr.getFragmentSequence.substring(pam.length)
+         val seq = fr.getSequence.substring(pam.length)
          guides.collect{ case g if g == seq => g -> List(fr)}
        }
      }
    } else guidomeFragments.rdd.flatMap{ fr=>
-       guides.collect{ case g if g == fr.getFragmentSequence => g -> List(fr)}
+       guides.collect{ case g if g == fr.getSequence => g -> List(fr)}
      }
   }.reduceByKey(_ ++ _)
 
   def cutomeFromGuideFragments(guideFragments: RDD[(String, List[NucleotideContigFragment])]): RDD[(String, List[CutDS])] = {
       guideFragments.mapValues{ frgs=> frgs.map{ fragment =>
         val guide = if(guideEnd < 0 )
-          fragment.getFragmentSequence.substring(0, fragment.getFragmentLength.toInt - pam.length)
+          fragment.getSequence.substring(0, fragment.getLength.toInt - pam.length)
         else
-          fragment.getFragmentSequence.substring(pam.length)
-          val pamEdge: Long = if(guideEnd >= 0 ) fragment.getFragmentStartPosition + pam.length else fragment.getFragmentEndPosition - pam.length
+          fragment.getSequence.substring(pam.length)
+          val pamEdge: Long = if(guideEnd >= 0 ) fragment.getStart + pam.length else fragment.getEnd - pam.length
           CutDS( guide,
-            ReferencePosition(fragment.getContig.getContigName, pamEdge + forwardCut) ,
-            ReferencePosition(fragment.getContig.getContigName, pamEdge + reverseCut)
+            ReferencePosition(fragment.getContigName, pamEdge + forwardCut) ,
+            ReferencePosition(fragment.getContigName, pamEdge + reverseCut)
           )
         }
       }
@@ -62,13 +62,13 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
     */
   def cutome(contigFragmentRDD: NucleotideContigFragmentRDD): RDD[CutDS] = {
     contigFragmentRDD.rdd.flatMap{ fragment=>
-      val start = fragment.getFragmentStartPosition
-      val sequence = fragment.getFragmentSequence
+      val start = fragment.getStart
+      val sequence = fragment.getSequence
       val guides: Seq[(Long, String)] = guideSearchIn(sequence, false)
       cutsGuided(guides, false).map{case (guide, (f, b)) =>
         CutDS( guide,
-          ReferencePosition(fragment.getContig.getContigName, start + f) ,
-          ReferencePosition(fragment.getContig.getContigName, start + b)
+          ReferencePosition(fragment.getContigName, start + f) ,
+          ReferencePosition(fragment.getContigName, start + b)
         )
       }
     }
@@ -78,7 +78,7 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
     contigFragmentRDD.transform{
       rdd=> rdd.filter{
         frag =>
-          val seq = frag.getFragmentSequence.toUpperCase
+          val seq = frag.getSequence.toUpperCase
           val percent = seq.count{
             case 'G' | 'C' => true
             case _ => false
@@ -113,15 +113,15 @@ trait CRISPRADAM extends CRISPR with HomologyArms with Serializable {
                                      addBefore: Int = 0,
                                      addAfter: Int = 0): List[NucleotideContigFragment] = {
 
-      guideSearchIn(fragment.getFragmentSequence, includePam, addBefore, addAfter).map{
+      guideSearchIn(fragment.getSequence, includePam, addBefore, addAfter).map{
         case (index, seq)=>
           NucleotideContigFragment
             .newBuilder(fragment)
-            .setFragmentStartPosition(fragment.getFragmentStartPosition + index)
-            .setFragmentEndPosition(fragment.getFragmentStartPosition + (index + seq.length))
-            .setFragmentNumber(null)
-            .setFragmentSequence(seq)
-            .setFragmentLength(seq.length: Long)
+            .setStart(fragment.getStart + index)
+            .setEnd(fragment.getStart + (index + seq.length))
+            .setIndex(null)
+            .setSequence(seq)
+            .setLength(seq.length: Long)
             .build()
       }
     }

@@ -1,7 +1,6 @@
 import com.typesafe.sbt.SbtNativePackager.autoImport._
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 import sbt.Keys.{javaOptions, javacOptions, scalacOptions}
-import sbtdocker._
 import sbt._
 
 //settings for all the projects
@@ -9,21 +8,23 @@ lazy val commonSettings = Seq(
 
 	organization := "comp.bio.aging",
 
-	scalaVersion :=  "2.11.8",
+	scalaVersion :=  "2.11.12",
 
-	version := "0.0.6-M7",
+	version := "0.0.6-SNAP12",
+
+  coursierMaxIterations := 200,
 
 	unmanagedClasspath in Compile ++= (unmanagedResources in Compile).value,
 
 	updateOptions := updateOptions.value.withCachedResolution(true), //to speed up dependency resolution
 
+	resolvers += Resolver.mavenLocal,
+
+	resolvers += Resolver.sonatypeRepo("releases"),
+
 	resolvers += sbt.Resolver.bintrayRepo("comp-bio-aging", "main"),
 
 	resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases"),
-
-	maintainer := "Anton Kulaga <antonkulaga@gmail.com>",
-
-	packageDescription := """crispr-server""",
 
 	bintrayRepository := "main",
 
@@ -41,7 +42,6 @@ lazy val commonSettings = Seq(
 
 	javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M", "-encoding", "UTF-8"),
 
-	initialCommands in (Test, console) := """ammonite.Main().run()"""
 )
 
 commonSettings
@@ -54,44 +54,9 @@ fork in run := true
 
 parallelExecution in Test := false
 
-packageSummary := "crispr-server"
+enablePlugins(DockerPlugin, JavaServerAppPackaging)
 
-libraryDependencies ++= Seq(
-
-	"org.denigma" %% "akka-http-extensions" % "0.0.15",
-
-	"com.typesafe.akka" %% "akka-stream" % "2.4.17",
-
-	"net.sf.py4j" % "py4j" % "0.10.4",
-
-	"com.lihaoyi" % "ammonite" % "0.8.2" % Test cross CrossVersion.full,
-
-	"com.typesafe.akka" %% "akka-http-testkit" % "10.0.5" % Test,
-
-	"org.scalatest" %% "scalatest" % "3.0.1" % Test
-)
-
-enablePlugins(sbtdocker.DockerPlugin, JavaServerAppPackaging)
-
-
-dockerfile in docker := {
-	val appDir = stage.value
-	val targetDir = "/app"
-	immutable.Dockerfile.empty
-		.from("compbioaging/azimuth:latest")
-		.run("pip install jep")
-		.run("apt-get", "-y", "install", "openjdk-8-jre-headless")
-		.cmdRaw("java -jar app.jar")
-		.entryPoint(s"$targetDir/bin/${executableScriptName.value}")
-		.copy(appDir, targetDir)
-}
-
-buildOptions in docker := sbtdocker.BuildOptions(
-	cache = false,
-	pullBaseImage = sbtdocker.BuildOptions.Pull.Always
-)
-
-lazy val circeVersion = "0.7.1"
+lazy val framelessVersion = "0.4.0"
 
 lazy val crispr = crossProject
   .crossType(CrossType.Full)
@@ -100,29 +65,22 @@ lazy val crispr = crossProject
   .settings(
     name := "crispr",
 		libraryDependencies ++= Seq(
-			"fr.hmil" %%% "roshttp" % "2.0.1",
-			"com.lihaoyi" %%% "pprint" % "0.4.4",
-			"org.scalatest" %%% "scalatest" % "3.0.1" % Test
-		),
-		libraryDependencies ++= Seq(
-			"io.circe" %%% "circe-core",
-			"io.circe" %%% "circe-generic",
-			"io.circe" %%% "circe-parser"
-		).map(_ % circeVersion)
+			"fr.hmil" %%% "roshttp" % "2.1.0",
+			"com.lihaoyi" %%% "pprint" % "0.5.3",
+			"com.pepegar" %%% "hammock-circe" % "0.7.1",
+			"org.scalatest" %%% "scalatest" % "3.0.4" % Test
+		)
 	)
-  .disablePlugins(RevolverPlugin)
   .jvmSettings(
     libraryDependencies ++= Seq(
-			"org.apache.spark" %% "spark-sql" % "2.1.0",
-	        "comp.bio.aging" %% "adam-playground" % "0.0.7-M2",
+			"org.apache.spark" %% "spark-sql" % "2.2.1",
+			"comp.bio.aging" %% "adam-playground" % "0.0.7-SNAP6.6",
 			"org.scalaj" %% "scalaj-http" % "2.3.0",
-			"com.github.pathikrit" %% "better-files" % "2.17.1",
-			"com.lihaoyi" % "ammonite" % "0.8.2" % Test cross CrossVersion.full,
-			"com.holdenkarau" %% "spark-testing-base" % "2.1.0_0.6.0" % Test
+			"com.github.pathikrit" %% "better-files" % "3.4.0",
+			"com.holdenkarau" %% "spark-testing-base" % "2.2.0_0.8.0" % Test,
+			"org.typelevel" %% "frameless-cats"      % framelessVersion,
+			"org.typelevel" %% "frameless-dataset"   % framelessVersion
 		)
-  )
-  .jsSettings(
-    jsDependencies += RuntimeDOM % Test
   )
 
 lazy val crisprJVM = crispr.jvm

@@ -31,7 +31,7 @@ object Cells {
   case class Assembly(species: String, path: String)
   {
     val genomeAdam = s"${path}/genome.adam" //genome release
-  val featuresAdam = s"${path}/features.adam" //features
+    val featuresAdam = s"${path}/features.adam" //features
   }
 
   val human = Assembly("human", s"${root}/genomes/HUMAN/26")

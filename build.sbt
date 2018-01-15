@@ -10,7 +10,7 @@ lazy val commonSettings = Seq(
 
 	scalaVersion :=  "2.11.12",
 
-	version := "0.0.6-SNAP12",
+	version := "0.0.7",
 
   coursierMaxIterations := 200,
 
@@ -40,7 +40,7 @@ lazy val commonSettings = Seq(
 
 	parallelExecution in Test := false,
 
-	javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M", "-encoding", "UTF-8"),
+	javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint", "-J-Xss5M", "-encoding", "UTF-8")
 
 )
 
@@ -65,21 +65,19 @@ lazy val crispr = crossProject
   .settings(
     name := "crispr",
 		libraryDependencies ++= Seq(
-			"fr.hmil" %%% "roshttp" % "2.1.0",
-			"com.lihaoyi" %%% "pprint" % "0.5.3",
-			"com.pepegar" %%% "hammock-circe" % "0.7.1",
-			"org.scalatest" %%% "scalatest" % "3.0.4" % Test
-		)
+      "com.lihaoyi" %%% "pprint" % "0.5.3",
+			"com.pepegar" %%% "hammock-circe" % "0.8.1",
+      "org.scalatest" %%% "scalatest" % "3.0.4" % Test,
+      "fr.hmil" %%% "roshttp" % "2.1.0" % Test
+    )
 	)
   .jvmSettings(
     libraryDependencies ++= Seq(
-			"org.apache.spark" %% "spark-sql" % "2.2.1",
-			"comp.bio.aging" %% "adam-playground" % "0.0.7-SNAP6.6",
-			"org.scalaj" %% "scalaj-http" % "2.3.0",
-			"com.github.pathikrit" %% "better-files" % "3.4.0",
-			"com.holdenkarau" %% "spark-testing-base" % "2.2.0_0.8.0" % Test,
-			"org.typelevel" %% "frameless-cats"      % framelessVersion,
-			"org.typelevel" %% "frameless-dataset"   % framelessVersion
+			"comp.bio.aging" %% "adam-playground" % "0.0.8",
+			"org.hammerlab" %% "magic-rdds" % "4.1.0",
+			"org.scalaj" %% "scalaj-http" % "2.3.0" % Test,
+			"com.github.pathikrit" %% "better-files" % "3.4.0" % Test,
+			"com.holdenkarau" %% "spark-testing-base" % "2.2.0_0.8.0" % Test
 		)
   )
 

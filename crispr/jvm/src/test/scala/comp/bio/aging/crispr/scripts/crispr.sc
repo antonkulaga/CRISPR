@@ -1,24 +1,14 @@
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import org.apache.spark.storage.StorageLevel
-import org.bdgenomics.adam.models.ReferenceRegion
-import org.bdgenomics.adam.rdd.feature.FeatureRDD
-import org.bdgenomics.formats.avro.Feature
-
-import scala.collection.immutable.{Seq, Set}
-
 val sparkContext: SparkContext
 
 object Cells {
-  import org.bdgenomics.adam.models.{SequenceDictionary, SequenceRecord}
+  import org.apache.spark.rdd.RDD
+  import org.bdgenomics.adam.models.ReferenceRegion
+
+  import scala.collection.immutable.Set
   import comp.bio.aging.playground.extensions._
-  import org.bdgenomics.adam.rdd.contig.NucleotideContigFragmentRDD
-  import org.bdgenomics.adam.rdd.read.AlignmentRecordRDD
-  import org.bdgenomics.formats.avro.{Contig, NucleotideContigFragment}
-  import org.bdgenomics.adam.rdd.ADAMContext._
-  import comp.bio.aging.playground.extensions.stringSeqExtensions._
-  import org.apache.spark.SparkContext
   import org.apache.spark.sql._
+  import org.bdgenomics.adam.rdd.ADAMContext._
 
   /* ... new cell ... */
 
@@ -44,8 +34,6 @@ object Cells {
   /* ... new cell ... */
 
   import session.implicits._
-  import org.apache.spark.sql.types._
-  import org.apache.spark.sql.functions._
 
   val guideListPath = s"${datasets}/sam-target-sequences.csv"
   val guideList = session.read
@@ -147,7 +135,6 @@ object Cells {
   /* ... new cell ... */
 
   import comp.bio.aging.playground.extensions._
-  import org.bdgenomics.adam.rdd.ADAMContext._
 
 
   val transcriptNames = features.transcripts.filterByGeneName(g=>lowGenes.contains(g.toLowerCase)).rdd.map{g=>

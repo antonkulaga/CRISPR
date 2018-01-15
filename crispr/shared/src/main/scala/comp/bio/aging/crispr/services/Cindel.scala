@@ -1,5 +1,5 @@
 package comp.bio.aging.crispr.services
-
+/*
 import fr.hmil.roshttp.HttpRequest
 import fr.hmil.roshttp.body.URLEncodedBody
 import io.circe._
@@ -72,3 +72,4 @@ class Cindel(val base: String = "http://big.hanyang.ac.kr", script: String ="/en
   def getScore(name: String, guide: String): Future[CindelData] =
     getScores(List((name, guide))).map(_.head)
 }
+*/

@@ -3,7 +3,7 @@ package comp.bio.aging.crispr.services
 import io.circe.parser._
 
 import scala.util.{Failure, Try}
-
+/*
 /**
   * runs azimuth scorer
   * right now it is packed in docker container
@@ -38,3 +38,4 @@ object AzimuthServer {
 
 
 }
+*/

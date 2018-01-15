@@ -1,5 +1,5 @@
 package comp.bio.aging.crispr.services
-
+/*
 import fr.hmil.roshttp.HttpRequest
 import fr.hmil.roshttp.body.JSONBody.JSONObject
 import io.circe.{Decoder, Encoder, Json, Parser, _}
@@ -100,3 +100,4 @@ class GenomeCRISPRsgRNA(base: String = "http://genomecrispr.dkfz.de/api/sgrnas/"
   def byChromosome(name: String): Future[List[CRISPRscreenResult]] = byChromosomeRequest(name).flatMap(toCRISPRScreenResult)
 
 }
+*/

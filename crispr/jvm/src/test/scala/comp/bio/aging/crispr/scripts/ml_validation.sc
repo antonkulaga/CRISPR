@@ -117,4 +117,3 @@ object Cells {
 
   /* ... new cell ... */
 }
-                  

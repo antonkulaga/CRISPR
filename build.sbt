@@ -1,5 +1,5 @@
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 import com.typesafe.sbt.SbtNativePackager.autoImport._
-import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 import sbt.Keys.{javaOptions, javacOptions, scalacOptions}
 import sbt._
 
@@ -10,7 +10,7 @@ lazy val commonSettings = Seq(
 
 	scalaVersion :=  "2.11.12",
 
-	version := "0.0.7",
+	version := "0.0.9",
 
   coursierMaxIterations := 200,
 
@@ -66,18 +66,18 @@ lazy val crispr = crossProject
     name := "crispr",
 		libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "pprint" % "0.5.3",
-			"com.pepegar" %%% "hammock-circe" % "0.8.1",
-      "org.scalatest" %%% "scalatest" % "3.0.4" % Test,
+      "com.pepegar" %%% "hammock-circe" % "0.8.4",
+      "org.scalatest" %%% "scalatest" % "3.0.5" % Test,
       "fr.hmil" %%% "roshttp" % "2.1.0" % Test
     )
 	)
   .jvmSettings(
     libraryDependencies ++= Seq(
-			"comp.bio.aging" %% "adam-playground" % "0.0.8",
-			"org.hammerlab" %% "magic-rdds" % "4.1.0",
-			"org.scalaj" %% "scalaj-http" % "2.3.0" % Test,
-			"com.github.pathikrit" %% "better-files" % "3.4.0" % Test,
-			"com.holdenkarau" %% "spark-testing-base" % "2.2.0_0.8.0" % Test
+			"comp.bio.aging" %% "adam-playground" % "0.0.13",
+			"org.hammerlab" %% "magic-rdds" % "4.2.3",
+			"org.scalaj" %% "scalaj-http" % "2.4.0" % Test,
+			"com.github.pathikrit" %% "better-files" % "3.5.0" % Test,
+			"com.holdenkarau" %% "spark-testing-base" % "2.3.0_0.9.0" % Test
 		)
   )
 

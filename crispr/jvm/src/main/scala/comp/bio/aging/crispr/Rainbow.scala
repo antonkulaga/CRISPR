@@ -1,6 +1,6 @@
 package comp.bio.aging.crispr
 
-import comp.bio.aging.playground.trees.SimpleTree
+//import comp.bio.aging.playground.trees.SimpleTree
 import org.apache.spark.rdd.RDD
 import org.bdgenomics.adam.rdd.contig.NucleotideContigFragmentRDD
 
